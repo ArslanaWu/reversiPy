@@ -150,23 +150,14 @@ def get_stable_pieces(chessboard, color):
 def get_piece_num(chessboard, color, op_color):
     chessboard_size = chessboard.shape[0]
 
-    chessboard_score = [[100, -10, 8, 6, 6, 8, -10, 100],
-                        [-10, -25, -4, -4, -4, -4, -25, -10],
-                        [8, -4, 6, 4, 4, 6, -4, 8],
-                        [6, -4, 4, 0, 0, 4, -4, 6],
-                        [6, -4, 4, 0, 0, 4, -4, 6],
-                        [8, -4, 6, 4, 4, 6, -4, 8],
-                        [-10, -25, -4, -4, -4, -4, -25, -10],
-                        [100, -10, 8, 6, 6, 8, -10, 100]]
-
     num = [0, 0]
 
     for i in chessboard_size:
         for j in chessboard_size:
             if chessboard[i][j] == color:
-                num[0] = num[0] + chessboard_score[i][j]
+                num[0] = num[0] + 1
             elif chessboard[i][j] == op_color:
-                num[1] = num[1] + chessboard_score[i][j]
+                num[1] = num[1] + 1
 
     return num
 

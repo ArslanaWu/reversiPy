@@ -7,7 +7,7 @@ OLOR_WHITE = 1
 COLOR_NONE = 0
 random.seed(0)
 
-weight_list = np.array([8, 85, -40, 10, 210, 520],
+weight_list = np.array([[8, 85, -40, 10, 210, 520],
                        [8, 85, -40, 10, 210, 520],
                        [33, -50, -15, 4, 416, 2153],
                        [46, -50, -1, 3, 612, 4141],
@@ -16,7 +16,7 @@ weight_list = np.array([8, 85, -40, 10, 210, 520],
                        [44, 50, 163, 0, 443, 2568],
                        [13, 50, 66, 0, 121, 986],
                        [4, 50, 31, 0, 27, 192],
-                       [8, 500, 77, 0, 36, 299])
+                       [8, 500, 77, 0, 36, 299]])
 
 stage_list = [0, 55, 56, 57, 58, 59, 60, 61, 62, 63]
 
@@ -52,7 +52,7 @@ class AI(object):
             move_list = AI.get_all_moves(chessboard, self.color)
             for move in move_list:
                 new_board = AI.make_move(chessboard, move[0], move[1], self.color)
-                new_score = AI.alpha_beta_cutoff_search(new_board, self.color, 3,
+                new_score = AI.alpha_beta_cutoff_search(new_board, self.color, 2,
                                                              self.color == -1, 0x80000000, 0x7FFFFFFF)
                 if new_score > best_score:
                     best_score = new_score
@@ -128,23 +128,14 @@ class AI(object):
     def get_piece_num(chessboard, color, op_color):
         chessboard_size = chessboard.shape[0]
 
-        chessboard_score = [[100, -10, 8, 6, 6, 8, -10, 100],
-                            [-10, -25, -4, -4, -4, -4, -25, -10],
-                            [8, -4, 6, 4, 4, 6, -4, 8],
-                            [6, -4, 4, 0, 0, 4, -4, 6],
-                            [6, -4, 4, 0, 0, 4, -4, 6],
-                            [8, -4, 6, 4, 4, 6, -4, 8],
-                            [-10, -25, -4, -4, -4, -4, -25, -10],
-                            [100, -10, 8, 6, 6, 8, -10, 100]]
-
         num = [0, 0]
 
         for i in chessboard_size:
             for j in chessboard_size:
                 if chessboard[i][j] == color:
-                    num[0] = num[0] + chessboard_score[i][j]
+                    num[0] = num[0] + 1
                 elif chessboard[i][j] == op_color:
-                    num[1] = num[1] + chessboard_score[i][j]
+                    num[1] = num[1] + 1
 
         return num
 
@@ -270,9 +261,27 @@ class AI(object):
 
     @staticmethod
     def placement(chessboard, color):
-        score = AI.get_piece_num(chessboard, color, color * -1)
+        chessboard_size = chessboard.shape[0]
 
-        return score[0] - score[1]
+        chessboard_score = [[100, -10, 8, 6, 6, 8, -10, 100],
+                            [-10, -25, -4, -4, -4, -4, -25, -10],
+                            [8, -4, 6, 4, 4, 6, -4, 8],
+                            [6, -4, 4, 0, 0, 4, -4, 6],
+                            [6, -4, 4, 0, 0, 4, -4, 6],
+                            [8, -4, 6, 4, 4, 6, -4, 8],
+                            [-10, -25, -4, -4, -4, -4, -25, -10],
+                            [100, -10, 8, 6, 6, 8, -10, 100]]
+
+        num = [0, 0]
+
+        for i in chessboard_size:
+            for j in chessboard_size:
+                if chessboard[i][j] == color:
+                    num[0] = num[0] + chessboard_score[i][j]
+                elif chessboard[i][j] == color * -1:
+                    num[1] = num[1] + chessboard_score[i][j]
+
+        return num[0] - num[1]
 
     @staticmethod
     def corner(chessboard, color):

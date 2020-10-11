@@ -11,7 +11,7 @@ import BoardHelper
 #                        [13,  50,  66,  0, 121,  986],
 #                        [ 4,  50,  31,  0,  27,  192],
 #                        [ 8, 500,  77,  0,  36,  299])
-weight_list = np.array([8, 85, -40, 10, 210, 520],
+weight_list = np.array([[8, 85, -40, 10, 210, 520],
                        [8, 85, -40, 10, 210, 520],
                        [33, -50, -15, 4, 416, 2153],
                        [46, -50, -1, 3, 612, 4141],
@@ -20,7 +20,7 @@ weight_list = np.array([8, 85, -40, 10, 210, 520],
                        [44, 50, 163, 0, 443, 2568],
                        [13, 50, 66, 0, 121, 986],
                        [4, 50, 31, 0, 27, 192],
-                       [8, 500, 77, 0, 36, 299])
+                       [8, 500, 77, 0, 36, 299]])
 
 stage_list = [0, 55, 56, 57, 58, 59, 60, 61, 62, 63]
 
@@ -72,9 +72,27 @@ def mobility(chessboard, color):
 
 
 def placement(chessboard, color):
-    score = BoardHelper.get_piece_num(chessboard, color, color * -1)
+    chessboard_size = chessboard.shape[0]
 
-    return score[0] - score[1]
+    chessboard_score = [[100, -10, 8, 6, 6, 8, -10, 100],
+                        [-10, -25, -4, -4, -4, -4, -25, -10],
+                        [8, -4, 6, 4, 4, 6, -4, 8],
+                        [6, -4, 4, 0, 0, 4, -4, 6],
+                        [6, -4, 4, 0, 0, 4, -4, 6],
+                        [8, -4, 6, 4, 4, 6, -4, 8],
+                        [-10, -25, -4, -4, -4, -4, -25, -10],
+                        [100, -10, 8, 6, 6, 8, -10, 100]]
+
+    num = [0, 0]
+
+    for i in chessboard_size:
+        for j in chessboard_size:
+            if chessboard[i][j] == color:
+                num[0] = num[0] + chessboard_score[i][j]
+            elif chessboard[i][j] == color*-1:
+                num[1] = num[1] + chessboard_score[i][j]
+
+    return num[0] - num[1]
 
 
 def corner(chessboard, color):
