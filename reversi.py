@@ -30,13 +30,18 @@ class AI(object):
 
         for i in range(self.chessboard_size):
             for j in range(self.chessboard_size):
-                if BoardHelper.move_is_valid(i, j, chessboard, self.chessboard_size, self.color):
+                if BoardHelper.move_is_valid(i, j, chessboard, self.color):
                     self.candidate_list.append((i, j))
 
         if len(self.candidate_list) > 1:
             Evaluator.init_weights()
 
-            best_move = Minimax.alpha_beta_cutoff_search(chessboard, self.color, 3,
-                                                         self.color == -1, 0x80000000, 0x7FFFFFFF)
-            self.candidate_list.append(best_move)
-
+            best_score = 0x80000000
+            move_list = BoardHelper.get_all_moves(chessboard, self.color)
+            for move in move_list:
+                new_board = BoardHelper.make_move(chessboard, move[0], move[1], self.color)
+                new_score = Minimax.alpha_beta_cutoff_search(new_board, self.color, 3,
+                                                             self.color == -1, 0x80000000, 0x7FFFFFFF)
+                if new_score > best_score:
+                    best_score = new_score
+                    self.candidate_list.append(move)

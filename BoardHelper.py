@@ -159,16 +159,16 @@ def get_piece_num(chessboard, color, op_color):
                         [-10, -25, -4, -4, -4, -4, -25, -10],
                         [100, -10, 8, 6, 6, 8, -10, 100]]
 
-    score = [0, 0]
+    num = [0, 0]
 
     for i in chessboard_size:
         for j in chessboard_size:
             if chessboard[i][j] == color:
-                score[0] = score[0] + chessboard_score[i][j]
+                num[0] = num[0] + chessboard_score[i][j]
             elif chessboard[i][j] == op_color:
-                score[1] = score[1] + chessboard_score[i][j]
+                num[1] = num[1] + chessboard_score[i][j]
 
-    return score
+    return num
 
 
 def game_is_finished(chessboard):

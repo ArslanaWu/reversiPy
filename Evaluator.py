@@ -28,12 +28,13 @@ weight_for_stage = np.zeros(65, len(stage_list))
 
 
 def init_weights():
-    for i in range(0, 64):
+    for i in range(0, 65):
         w = 0
         for j in range(0, len(stage_list)):
             if i <= stage_list[j]:
                 w = j
                 break
+
         if w == 0:
             weight_for_stage[i] = weight_list[0]
             continue
@@ -45,7 +46,15 @@ def init_weights():
 
 
 def evaluate(chessboard, color):
-    return None
+    piece_num_list = BoardHelper.get_piece_num(chessboard, color, color * -1)
+    weight = weight_for_stage[piece_num_list[0] + piece_num_list[1]]
+
+    score = weight[0] * mobility(chessboard, color)
+    + weight[3] * placement(chessboard, color)
+    + weight[4] * stability(chessboard, color)
+    + weight[5] * corner(chessboard, color)
+
+    return score
 
 
 def stability(chessboard, color):
@@ -65,6 +74,14 @@ def mobility(chessboard, color):
 def placement(chessboard, color):
     score = BoardHelper.get_piece_num(chessboard, color, color * -1)
 
-    return score[0]-score[1]
+    return score[0] - score[1]
 
 
+def corner(chessboard, color):
+    chessboard_size = chessboard.shape[0]
+    corner_list = [(0, 0), (0, chessboard_size - 1), (chessboard_size - 1, 0),
+                   (chessboard_size - 1, chessboard_size - 1)]
+    for cor in corner_list:
+        if BoardHelper.move_is_valid(cor[0], cor[1], chessboard, color):
+            return 100
+    return 0
