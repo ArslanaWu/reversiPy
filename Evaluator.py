@@ -24,7 +24,7 @@ weight_list = np.array([[8, 85, -40, 10, 210, 520],
 
 stage_list = [0, 55, 56, 57, 58, 59, 60, 61, 62, 63]
 
-weight_for_stage = np.zeros(65, len(stage_list))
+weight_for_stage = np.zeros((65, weight_list.shape[1]))
 
 
 def init_weights():
@@ -40,7 +40,7 @@ def init_weights():
             continue
         else:
             factor = float(i - stage_list[w - 1]) / (stage_list[w] - stage_list[w - 1])
-            for j in range(0, len(weight_list)):
+            for j in range(0, weight_list.shape[1]):
                 weight_for_stage[i][j] = round(factor * weight_list[w][j]
                                                + (1 - factor) * weight_list[w - 1][j])
 
@@ -85,8 +85,8 @@ def placement(chessboard, color):
 
     num = [0, 0]
 
-    for i in chessboard_size:
-        for j in chessboard_size:
+    for i in range(0, chessboard_size):
+        for j in range(0, chessboard_size):
             if chessboard[i][j] == color:
                 num[0] = num[0] + chessboard_score[i][j]
             elif chessboard[i][j] == color*-1:

@@ -19,7 +19,7 @@ def move_is_valid(i, j, chessboard, color):
         mi = i + move[0]
         mj = j + move[1]
         changed = False
-        while (0 < mi < chessboard_size - 1 and 0 < mj < chessboard_size - 1) and \
+        while (0 <= mi <= chessboard_size - 1 and 0 <= mj <= chessboard_size - 1) and \
                 chessboard[mi][mj] == op_color:
             mi = mi + move[0]
             mj = mj + move[1]
@@ -27,6 +27,21 @@ def move_is_valid(i, j, chessboard, color):
         if (0 <= mi <= chessboard_size - 1 and 0 <= mj <= chessboard_size - 1) and \
                 chessboard[mi][mj] == color and changed:
             return True
+    # for move in move_list:
+    #     mi = i + move[0]
+    #     mj = j + move[1]
+    #     while 0 <= mi < chessboard_size and 0 <= mj < chessboard_size and \
+    #             chessboard[mi][mj] == color * -1:
+    #         mi += move[0]
+    #         mj += move[1]
+    #     if 0 <= mi < chessboard_size and 0 <= mj < chessboard_size and \
+    #             chessboard[mi][mj] == color:
+    #         while True:
+    #             mi -= move[0]
+    #             mj -= move[1]
+    #             if mi == i and mj == j:
+    #                 break
+    #             return True
 
     # # move up
     # mi = i - 1
@@ -152,8 +167,8 @@ def get_piece_num(chessboard, color, op_color):
 
     num = [0, 0]
 
-    for i in chessboard_size:
-        for j in chessboard_size:
+    for i in range(0, chessboard_size):
+        for j in range(0, chessboard_size):
             if chessboard[i][j] == color:
                 num[0] = num[0] + 1
             elif chessboard[i][j] == op_color:

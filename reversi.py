@@ -33,15 +33,15 @@ class AI(object):
                 if BoardHelper.move_is_valid(i, j, chessboard, self.color):
                     self.candidate_list.append((i, j))
 
-        if len(self.candidate_list) > 1:
-            Evaluator.init_weights()
-
-            best_score = 0x80000000
-            move_list = BoardHelper.get_all_moves(chessboard, self.color)
-            for move in move_list:
-                new_board = BoardHelper.make_move(chessboard, move[0], move[1], self.color)
-                new_score = Minimax.alpha_beta_cutoff_search(new_board, self.color, 3,
-                                                             self.color == -1, 0x80000000, 0x7FFFFFFF)
-                if new_score > best_score:
-                    best_score = new_score
-                    self.candidate_list.append(move)
+        # if len(self.candidate_list) > 1:
+        #     Evaluator.init_weights()
+        #
+        #     best_score = 0x80000000
+        #     move_list = BoardHelper.get_all_moves(chessboard, self.color)
+        #     for move in move_list:
+        #         new_board = BoardHelper.make_move(chessboard, move[0], move[1], self.color)
+        #         new_score = Minimax.alpha_beta_cutoff_search(new_board, self.color, 3,
+        #                                                      self.color == -1, 0x80000000, 0x7FFFFFFF)
+        #         if new_score > best_score:
+        #             best_score = new_score
+        #             self.candidate_list.append(move)
