@@ -4,6 +4,7 @@ import numpy as np
 
 import reversi_combine_v2
 import reversi_combine_v3
+import ai_platform.ai_v1
 
 COLOR_BLACK = -1
 COLOR_WHITE = 1
@@ -127,7 +128,7 @@ if __name__ == '__main__':
     pf = AIPlatform(8)
     # overwrite players
     pf.players[0] = reversi_combine_v3.AI(8, COLOR_BLACK, TIME)  # first one must be black
-    pf.players[1] = reversi_combine_v2.AI(8, COLOR_WHITE, TIME)
+    pf.players[1] = ai_platform.ai_v1.AI(8, COLOR_WHITE, TIME)
     while pf.end_mark != 2:
         pf.go()
         print(pf.chessboard)

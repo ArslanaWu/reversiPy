@@ -7,6 +7,9 @@ OLOR_WHITE = 1
 COLOR_NONE = 0
 random.seed(0)
 
+MIN_VALUE = float("-inf")
+MAX_VALUE = float("inf")
+
 weight_list = np.array([[8, 85, -40, 10, 210, 520],
                         [8, 85, -40, 10, 210, 520],
                         [33, -50, -15, 4, 416, 2153],
@@ -113,9 +116,12 @@ class AI(object):
         self.time_out = time_out
         # You need add your decision into your candidate_list. System will get the end of your candidate_list as your decision .
         self.candidate_list = []
+        self.time_out = 0
         AI.init_weights()
 
     def go(self, chessboard):
+        self.time_out = time.time() + 4.7
+
         self.candidate_list.clear()
 
         move_list = []
@@ -126,7 +132,7 @@ class AI(object):
                     move_list.append((i, j))
 
         if len(move_list) > 1:
-            best_score = float("inf")
+            best_score = MIN_VALUE
             have_corner = False
 
             corner_list = [(0, 0), (0, self.chessboard_size - 1), (self.chessboard_size - 1, 0),
@@ -142,20 +148,57 @@ class AI(object):
                         print("move to (" + str(corner[0]) + ", " + str(corner[1]) + "), corner")
 
             if not have_corner:
-                for move in move_list:
-                    flipped_board = AI.make_move(chessboard, move[0], move[1], self.color)
-                    depth = 3
-                    num = AI.get_piece_num(chessboard, self.color, self.color * -1)
-                    if (num[0] + num[1]) > 55:
-                        depth = 100
-                    new_score = AI.alpha_beta_cutoff_search(flipped_board, -self.color, False, 2, float("-inf"),
-                                                            float("inf"))
-                    print("move to (" + str(move[0]) + ", " + str(move[1]) + "): score " + str(new_score))
-                    if new_score < best_score:
-                        best_score = new_score
-                        self.candidate_list.append(move)
-                        # print("move to (" + str(move[0]) + ", " + str(move[1]) + "): score " + str(new_score))
+                depth = 2
+                best_score_last = MIN_VALUE
 
+                while True:
+                    if time.time() > self.time_out:
+                        break
+                    best_score = MIN_VALUE
+                    best_move = None
+                    for move in move_list:
+                        flipped_board = AI.make_move(chessboard, move[0], move[1], self.color)
+                        new_score = self.min_value(flipped_board, -self.color, depth, MIN_VALUE, MAX_VALUE)
+                        # print("v3 move to (" + str(move[0]) + ", " + str(move[1]) + "): score " + str(new_score)
+                        #       + ", depth = " + str(depth))
+                        if new_score >= best_score:
+                            best_score = new_score
+                            best_move = move
+                    if best_score > best_score_last:
+                        self.candidate_list.append(best_move)
+                        best_score_last = best_score
+                    depth += 1
+                    if best_score == MIN_VALUE:
+                        break
+                    print("v3 move to (" + str(best_move[0]) + ", " + str(best_move[1]) + "): score " + str(best_score)
+                          + ", depth = " + str(depth))
+                # # depth= 3
+                # best_score = MIN_VALUE
+                # best_move = None
+                # for move in move_list:
+                #     flipped_board = AI.make_move(chessboard, move[0], move[1], self.color)
+                #     new_score = self.min_value(flipped_board, -self.color, 2, MIN_VALUE, MAX_VALUE)
+                #     print("v3 move to (" + str(move[0]) + ", " + str(move[1]) + "): score " + str(new_score))
+                #     if new_score >= best_score:
+                #         best_score = new_score
+                #         best_move = move
+                # self.candidate_list.append(best_move)
+                #
+                # # depth = 4
+                # best_score = MIN_VALUE
+                # best_move = None
+                # for move in move_list:
+                #     flipped_board = AI.make_move(chessboard, move[0], move[1], self.color)
+                #     depth = 3
+                #     num = AI.get_piece_num(chessboard, self.color, -self.color)
+                #     if (num[0] + num[1]) > 55:
+                #         depth = 100
+                #     new_score = self.min_value(flipped_board, -self.color, depth, MIN_VALUE, MAX_VALUE)
+                #     print("v3 move to (" + str(move[0]) + ", " + str(move[1]) + "): score " + str(new_score))
+                #     if new_score >= best_score:
+                #         best_score = new_score
+                #         best_move = move
+                # self.candidate_list.append(best_move)
 
     # BoardHelper
     @staticmethod
@@ -296,56 +339,111 @@ class AI(object):
                     chessboard[turn[0]][turn[1]] = color
 
     # Minimax
-    @staticmethod
-    def alpha_beta_cutoff_search(chessboard, color, is_max, depth, alpha, beta):
-        op_color = -1 * color
-
+    def min_value(self, chessboard, color, depth, alpha, beta):
+        if time.time() > self.time_out:
+            return AI.evaluate(chessboard, self.color)
         if depth <= 0 or AI.game_is_finished(chessboard):
-            return AI.evaluate(chessboard, color)
+            return AI.evaluate(chessboard, self.color)
+
+        best_score = MAX_VALUE
 
         move_list = AI.get_all_moves(chessboard, color)
-        if is_max:
-            best_score = float("inf")
-            for move in move_list:
-                flipped_board = AI.make_move(chessboard, move[0], move[1], color)
-                new_score = AI.alpha_beta_cutoff_search(flipped_board, op_color, not is_max, depth - 1, alpha, beta)
-                best_score = min(best_score, new_score)
+        for move in move_list:
+            flipped_board = AI.make_move(chessboard, move[0], move[1], color)
+            new_score = self.max_value(flipped_board, -color, depth - 1, alpha, beta)
 
-                if best_score > alpha:
-                    alpha = best_score
-                if alpha >= beta:
-                    return best_score
+            best_score = min(best_score, new_score)
+            if best_score <= alpha:
+                return best_score
+            beta = min(beta, best_score)
+        return best_score
 
-            return best_score
-        else:
-            best_score = float("-inf")
-            for move in move_list:
-                flipped_board = AI.make_move(chessboard, move[0], move[1], color)
-                new_score = AI.alpha_beta_cutoff_search(flipped_board, op_color, not is_max, depth - 1, alpha, beta)
-                best_score = max(best_score, new_score)
+    def max_value(self, chessboard, color, depth, alpha, beta):
+        if time.time() > self.time_out:
+            return AI.evaluate(chessboard, self.color)
+        if depth <= 0 or AI.game_is_finished(chessboard):
+            return AI.evaluate(chessboard, self.color)
 
-                if best_score < beta:
-                    beta = best_score
-                if alpha >= beta:
-                    return best_score
+        best_score = MIN_VALUE
 
-            return best_score
+        move_list = AI.get_all_moves(chessboard, color)
+        for move in move_list:
+            flipped_board = AI.make_move(chessboard, move[0], move[1], color)
+            new_score = self.min_value(flipped_board, -color, depth - 1, alpha, beta)
 
-            # for move in move_list:
-            #     flipped_board = AI.make_move(chessboard, move[0], move[1], color)
-            #     new_score = -AI.alpha_beta_cutoff_search(flipped_board, op_color, depth - 1, -alpha, -beta)
-            #
-            #     if new_score > alpha:
-            #         if new_score >= beta:
-            #             return new_score
-            #         else:
-            #             alpha = max(new_score, alpha)
-            #     else:
-            #         max_score = max(new_score, max_score)
-            #
-            # return max_score
+            best_score = max(best_score, new_score)
+            if best_score >= beta:
+                return best_score
+            alpha = max(alpha, best_score)
+        return best_score
+
+    # def alpha_beta_cutoff_search(self, chessboard, color, depth, alpha, beta):
+
+    # op_color = -1 * color
+    # alpha = MIN_VALUE
+    #
+    # if depth <= 0 or AI.game_is_finished(chessboard):
+    #     return AI.evaluate(chessboard, color)
+    #
+    # move_list = AI.get_all_moves(chessboard, color)
+    # for move in move_list:
+    #     flipped_board = AI.make_move(chessboard, move[0], move[1], color)
+    #     new_score = AI.alpha_beta_cutoff_search(flipped_board, op_color, depth - 1, -alpha)
+    #     if new_score > alpha:
+    #         alpha = new_score
+    #         if alpha >= beta:
+    #             break
+    # return alpha
+
+    # op_color = -1 * color
+    #
+    # if depth <= 0 or AI.game_is_finished(chessboard):
+    #     return AI.evaluate(chessboard, color)
+    #
+    # move_list = AI.get_all_moves(chessboard, color)
+    # if is_max:
+    #     best_score = MAX_VALUE
+    #     for move in move_list:
+    #         flipped_board = AI.make_move(chessboard, move[0], move[1], color)
+    #         new_score = AI.alpha_beta_cutoff_search(flipped_board, op_color, not is_max, depth - 1, alpha, beta)
+    #         best_score = min(best_score, new_score)
+    #
+    #         if best_score > alpha:
+    #             alpha = best_score
+    #         if alpha >= beta:
+    #             return best_score
+    #
+    #     return best_score
+    # else:
+    #     best_score = MIN_VALUE
+    #     for move in move_list:
+    #         flipped_board = AI.make_move(chessboard, move[0], move[1], color)
+    #         new_score = AI.alpha_beta_cutoff_search(flipped_board, op_color, not is_max, depth - 1, alpha, beta)
+    #         best_score = max(best_score, new_score)
+    #
+    #         if best_score < beta:
+    #             beta = best_score
+    #         if alpha >= beta:
+    #             return best_score
+    #
+    #     return best_score
+    #
+    #     # for move in move_list:
+    #     #     flipped_board = AI.make_move(chessboard, move[0], move[1], color)
+    #     #     new_score = -AI.alpha_beta_cutoff_search(flipped_board, op_color, depth - 1, -alpha, -beta)
+    #     #
+    #     #     if new_score > alpha:
+    #     #         if new_score >= beta:
+    #     #             return new_score
+    #     #         else:
+    #     #             alpha = max(new_score, alpha)
+    #     #     else:
+    #     #         max_score = max(new_score, max_score)
+    #     #
+    #     # return max_score
 
     # Evaluator
+
     @staticmethod
     def init_weights():
         for i in range(0, 65):
@@ -366,7 +464,7 @@ class AI(object):
 
     @staticmethod
     def evaluate(chessboard, color):
-        piece_num_list = AI.get_piece_num(chessboard, color, color * -1)
+        piece_num_list = AI.get_piece_num(chessboard, color, -color)
         weight = weight_for_stage[piece_num_list[0] + piece_num_list[1]]
 
         # score = weight[0] * AI.mobility(chessboard, color)
@@ -376,15 +474,15 @@ class AI(object):
         # + weight[4] * AI.stability(chessboard, color)
         # + weight[5] * AI.corner(chessboard, color)
 
-        score = AI.map_weight(chessboard, color)
-                # + 10 * AI.stability(chessboard, color) \
-                # + 15 * AI.mobility(chessboard, color) \
-                # + 10 * AI.pieces(chessboard, color)
+        score = AI.map_weight(chessboard, color) \
+                + 10 * AI.stability(chessboard, color) \
+                + 15 * AI.mobility(chessboard, color) \
+                + 20 * AI.pieces(chessboard, color)
 
-        # if (piece_num_list[0] + piece_num_list[1]) > 50:
-        #     score = AI.map_weight(chessboard, color) \
-        #             + 10 * AI.stability(chessboard, color) \
-        #             + 20 * AI.pieces(chessboard, color)
+        if (piece_num_list[0] + piece_num_list[1]) > 50:
+            score = AI.map_weight(chessboard, color) \
+                    + 20 * AI.stability(chessboard, color) \
+                    + 30 * AI.pieces(chessboard, color)
         return score
 
     @staticmethod
@@ -392,7 +490,7 @@ class AI(object):
         my_score = len(AI.get_stable_pieces(chessboard, color))
         op_score = len(AI.get_stable_pieces(chessboard, color * -1))
 
-        return 100 * (my_score - op_score) / (my_score + op_score + 1)
+        return my_score - op_score
 
     @staticmethod
     def mobility(chessboard, color):
@@ -421,24 +519,33 @@ class AI(object):
                                       [-25, -45, -1, -1, -1, -1, -45, -25],
                                       [500, -25, 10, 5, 5, 10, -25, 500]])
 
-        return sum(sum(chessboard * chessboard_score2)) * color
+        score = 0
 
-    @staticmethod
-    def corner(chessboard, color):
-        chessboard_size = chessboard.shape[0]
-        corner_list = [(0, 0), (0, chessboard_size - 1), (chessboard_size - 1, 0),
-                       (chessboard_size - 1, chessboard_size - 1)]
-        for cor in corner_list:
-            if AI.move_is_valid(cor[0], cor[1], chessboard, color):
-                return 100
-        return 0
+        for i in range(0, 8):
+            for j in range(0, 8):
+                if chessboard[i][j] == color:
+                    score += chessboard_score2[i][j] * color
+                if chessboard[i][j] == -color:
+                    score += chessboard_score2[i][j] * (-color)
 
-    @staticmethod
-    def frontier(chessboard, color):
-        my_score = len(AI.get_frontier_places(chessboard, color))
-        op_score = len(AI.get_frontier_places(chessboard, color * -1))
+        return score * color
 
-        return 100 * (my_score - op_score) / (my_score + op_score + 1)
+    # @staticmethod
+    # def corner(chessboard, color):
+    #     chessboard_size = chessboard.shape[0]
+    #     corner_list = [(0, 0), (0, chessboard_size - 1), (chessboard_size - 1, 0),
+    #                    (chessboard_size - 1, chessboard_size - 1)]
+    #     for cor in corner_list:
+    #         if AI.move_is_valid(cor[0], cor[1], chessboard, color):
+    #             return 100
+    #     return 0
+
+    # @staticmethod
+    # def frontier(chessboard, color):
+    #     my_score = len(AI.get_frontier_places(chessboard, color))
+    #     op_score = len(AI.get_frontier_places(chessboard, color * -1))
+    #
+    #     return 100 * (my_score - op_score) / (my_score + op_score + 1)
 
     @staticmethod
     def pieces(chessboard, color):
