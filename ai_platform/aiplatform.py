@@ -9,7 +9,7 @@ COLOR_BLACK = -1
 COLOR_WHITE = 1
 COLOR_NONE = 0
 
-TIME = 5
+TIME = 3
 
 
 class AIPlatform:
@@ -20,16 +20,16 @@ class AIPlatform:
         self.players = [player1, player2]
         self.chessboard_size = chessboard_size
         self.chessboard = np.zeros((chessboard_size, chessboard_size)).astype('int32')
-        # self.chessboard[[3, 4], [3, 4]] = COLOR_WHITE
-        # self.chessboard[[4, 3], [3, 4]] = COLOR_BLACK
-        self.chessboard = np.array([[0, 0, -1, -1, -1, -1, 0, 0],
-                                    [0, 0, -1, -1, -1, -1, 0, 1],
-                                    [1, -1, -1, -1, -1, -1, 1, 1],
-                                    [1, -1, -1, 1, -1, -1, -1, 1],
-                                    [1, -1, 1, 1, 1, 1, -1, 1],
-                                    [1, -1, 1, -1, -1, -1, 0, 1],
-                                    [1, 1, -1, -1, 0, -1, 0, 1],
-                                    [1, -1, -1, -1, -1, -1, 0, 0]])
+        self.chessboard[[3, 4], [3, 4]] = COLOR_WHITE
+        self.chessboard[[4, 3], [3, 4]] = COLOR_BLACK
+        # self.chessboard = np.array([[0, 0, -1, -1, -1, -1, 0, 0],
+        #                             [0, 0, -1, -1, -1, -1, 0, 1],
+        #                             [1, -1, -1, -1, -1, -1, 1, 1],
+        #                             [1, -1, -1, 1, -1, -1, -1, 1],
+        #                             [1, -1, 1, 1, 1, 1, -1, 1],
+        #                             [1, -1, 1, -1, -1, -1, 0, 1],
+        #                             [1, 1, -1, -1, 0, -1, 0, 1],
+        #                             [1, -1, -1, -1, -1, -1, 0, 0]])
         self.turn = COLOR_BLACK
         self.end_mark = 0
 
