@@ -148,11 +148,11 @@ class AI(object):
 
             if not have_corner:
                 depth = 1
-                best_score_last = MIN_VALUE
 
                 while True:
-                    if time.time() > self.time_out:
+                    if time.time() > self.time_out or depth > 100:
                         break
+
                     best_score = MIN_VALUE
                     best_move = None
                     for move in move_list:
@@ -163,41 +163,14 @@ class AI(object):
                         if new_score >= best_score:
                             best_score = new_score
                             best_move = move
+
                     if time.time() < self.time_out:
                         self.candidate_list.append(best_move)
-                        best_score_last = best_score
+
                     depth += 1
-                    if depth > 100:
-                        break
+
                     print("v3 move to (" + str(best_move[0]) + ", " + str(best_move[1]) + "): score " + str(best_score)
                           + ", depth = " + str(depth))
-                # # depth= 3
-                # best_score = MIN_VALUE
-                # best_move = None
-                # for move in move_list:
-                #     flipped_board = AI.make_move(chessboard, move[0], move[1], self.color)
-                #     new_score = self.min_value(flipped_board, -self.color, 2, MIN_VALUE, MAX_VALUE)
-                #     print("v3 move to (" + str(move[0]) + ", " + str(move[1]) + "): score " + str(new_score))
-                #     if new_score >= best_score:
-                #         best_score = new_score
-                #         best_move = move
-                # self.candidate_list.append(best_move)
-                #
-                # # depth = 4
-                # best_score = MIN_VALUE
-                # best_move = None
-                # for move in move_list:
-                #     flipped_board = AI.make_move(chessboard, move[0], move[1], self.color)
-                #     depth = 3
-                #     num = AI.get_piece_num(chessboard, self.color, -self.color)
-                #     if (num[0] + num[1]) > 55:
-                #         depth = 100
-                #     new_score = self.min_value(flipped_board, -self.color, depth, MIN_VALUE, MAX_VALUE)
-                #     print("v3 move to (" + str(move[0]) + ", " + str(move[1]) + "): score " + str(new_score))
-                #     if new_score >= best_score:
-                #         best_score = new_score
-                #         best_move = move
-                # self.candidate_list.append(best_move)
 
     # BoardHelper
     @staticmethod
@@ -249,23 +222,24 @@ class AI(object):
 
         corner_list = [(0, 0), (0, chessboard_size - 1), (chessboard_size - 1, 0),
                        (chessboard_size - 1, chessboard_size - 1)]
-        move_list = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        move_list = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         stable_piece_list = []
 
         for corner in corner_list:
             i = corner[0]
             j = corner[1]
-            if chessboard[i][j] != color:
-                continue
-            for move in move_list:
-                mi = i + move[0]
-                mj = j + move[1]
-                while (0 <= mi < chessboard_size and 0 <= mj < chessboard_size) and \
-                        chessboard[mi][mj] == color:
-                    if (mi, mj) in stable_piece_list:
-                        stable_piece_list.append((mi, mj))
-                    mi = mi + move[0]
-                    mj = mj + move[1]
+            if chessboard[i][j] == color:
+                if (i, j) not in stable_piece_list:
+                    stable_piece_list.append((i, j))
+                for move in move_list:
+                    mi = i + move[0]
+                    mj = j + move[1]
+                    while (0 <= mi < chessboard_size and 0 <= mj < chessboard_size) and \
+                            chessboard[mi][mj] == color:
+                        if (mi, mj) not in stable_piece_list:
+                            stable_piece_list.append((mi, mj))
+                        mi = mi + move[0]
+                        mj = mj + move[1]
 
         return stable_piece_list
 
@@ -477,8 +451,7 @@ class AI(object):
 
         score = AI.map_weight(chessboard, color) \
                 + 10 * AI.stability(chessboard, color) \
-                + 30 * AI.mobility(chessboard, color) \
-                + 20 * AI.pieces(chessboard, color)
+                + 30 * AI.mobility(chessboard, color)
 
         if (piece_num_list[0] + piece_num_list[1]) > 50:
             score = AI.map_weight(chessboard, color) \
