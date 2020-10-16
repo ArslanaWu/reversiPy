@@ -116,7 +116,6 @@ class AI(object):
         self.time_out = time_out
         # You need add your decision into your candidate_list. System will get the end of your candidate_list as your decision .
         self.candidate_list = []
-        self.time_out = 0
         AI.init_weights()
 
     def go(self, chessboard):
@@ -148,7 +147,7 @@ class AI(object):
                         print("move to (" + str(corner[0]) + ", " + str(corner[1]) + "), corner")
 
             if not have_corner:
-                depth = 2
+                depth = 1
                 best_score_last = MIN_VALUE
 
                 while True:
@@ -164,11 +163,11 @@ class AI(object):
                         if new_score >= best_score:
                             best_score = new_score
                             best_move = move
-                    if best_score > best_score_last:
+                    if time.time() < self.time_out:
                         self.candidate_list.append(best_move)
                         best_score_last = best_score
                     depth += 1
-                    if best_score == MIN_VALUE:
+                    if depth > 100:
                         break
                     print("v3 move to (" + str(best_move[0]) + ", " + str(best_move[1]) + "): score " + str(best_score)
                           + ", depth = " + str(depth))
@@ -256,6 +255,8 @@ class AI(object):
         for corner in corner_list:
             i = corner[0]
             j = corner[1]
+            if chessboard[i][j] != color:
+                continue
             for move in move_list:
                 mi = i + move[0]
                 mj = j + move[1]
@@ -476,19 +477,19 @@ class AI(object):
 
         score = AI.map_weight(chessboard, color) \
                 + 10 * AI.stability(chessboard, color) \
-                + 15 * AI.mobility(chessboard, color) \
+                + 30 * AI.mobility(chessboard, color) \
                 + 20 * AI.pieces(chessboard, color)
 
         if (piece_num_list[0] + piece_num_list[1]) > 50:
             score = AI.map_weight(chessboard, color) \
-                    + 20 * AI.stability(chessboard, color) \
-                    + 30 * AI.pieces(chessboard, color)
+                    + 10 * AI.stability(chessboard, color) \
+                    + 20 * AI.pieces(chessboard, color)
         return score
 
     @staticmethod
     def stability(chessboard, color):
         my_score = len(AI.get_stable_pieces(chessboard, color))
-        op_score = len(AI.get_stable_pieces(chessboard, color * -1))
+        op_score = len(AI.get_stable_pieces(chessboard, -color))
 
         return my_score - op_score
 
@@ -519,6 +520,15 @@ class AI(object):
                                       [-25, -45, -1, -1, -1, -1, -45, -25],
                                       [500, -25, 10, 5, 5, 10, -25, 500]])
 
+        chessboard_score3 = np.array([[10000, -5000, 5000, 0, 0, 5000, -5000, 10000],
+                                      [-5000, -5000, 5000, 0, 0, 5000, -5000, -5000],
+                                      [5000, 5000, 5000, 0, 0, 5000, 5000, 5000],
+                                      [0, 0, 0, 0, 0, 0, 0, 0],
+                                      [0, 0, 0, 0, 0, 0, 0, 0],
+                                      [5000, 5000, 5000, 0, 0, 5000, 5000, 5000],
+                                      [-5000, -5000, 5000, 0, 0, 5000, -5000, -5000],
+                                      [10000, -5000, 5000, 0, 0, 5000, -5000, 10000]])
+
         score = 0
 
         for i in range(0, 8):
@@ -540,15 +550,15 @@ class AI(object):
     #             return 100
     #     return 0
 
-    # @staticmethod
-    # def frontier(chessboard, color):
-    #     my_score = len(AI.get_frontier_places(chessboard, color))
-    #     op_score = len(AI.get_frontier_places(chessboard, color * -1))
-    #
-    #     return 100 * (my_score - op_score) / (my_score + op_score + 1)
+    @staticmethod
+    def frontier(chessboard, color):
+        my_score = len(AI.get_frontier_places(chessboard, color))
+        op_score = len(AI.get_frontier_places(chessboard, color * -1))
+
+        return 100 * (my_score - op_score) / (my_score + op_score + 1)
 
     @staticmethod
     def pieces(chessboard, color):
-        num = AI.get_piece_num(chessboard, color, color * -1)
+        num = AI.get_piece_num(chessboard, color, -color)
 
         return num[0] - num[1]
